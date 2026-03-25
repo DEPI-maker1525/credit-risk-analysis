@@ -1,5 +1,19 @@
+# Data
 Data/
+
+# Environment
 venv/
+
+# DuckDB
 warehouse/
+
+# dbt
 dbt_project/logs/
+dbt_project/target/
+
+# IDE
 .vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
