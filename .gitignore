@@ -2,3 +2,4 @@ Data/
 venv/
 warehouse/
 dbt_project/logs/
+.vscode/
