@@ -4,7 +4,6 @@ sources:
   - name: raw
     description: Raw data loaded from CSV into DuckDB
     schema: main
-
     tables:
       - name: application_train
       - name: application_test
