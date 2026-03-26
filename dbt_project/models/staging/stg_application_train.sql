@@ -4,13 +4,13 @@ SELECT
     CODE_GENDER as gender,
     FLAG_OWN_CAR as own_car,
     FLAG_OWN_REALTY as own_realty,
-    CNT_CHILDREN as number_of_children,
+    CNT_CHILDREN as num_children,
     AMT_INCOME_TOTAL as annual_income,
     AMT_CREDIT as total_loan_amount,
     AMT_ANNUITY as monthly_loan_amount,
     AMT_GOODS_PRICE as goods_price,
     NAME_INCOME_TYPE as job_type,
-    NAME_EDUCATION_TYPE as education_level,
+    NAME_EDUCATION_TYPE as education_type,
     NAME_FAMILY_STATUS as family_status,
     NAME_HOUSING_TYPE as housing_type,
     DAYS_BIRTH as age_day_application,
@@ -20,7 +20,11 @@ SELECT
     CNT_FAM_MEMBERS as num_family_members,
     REGION_RATING_CLIENT_W_CITY as region_rating_city,
     ORGANIZATION_TYPE as organization_type,
-    (EXT_SOURCE_1 + EXT_SOURCE_2 + EXT_SOURCE_3) / 3 as avg_external_sources,
+    (
+        COALESCE(EXT_SOURCE_1, 0) +
+        COALESCE(EXT_SOURCE_2, 0) +
+        COALESCE(EXT_SOURCE_3, 0)
+    ) / 3 as avg_external_sources,
     DAYS_LAST_PHONE_CHANGE as days_last_phone_change,
     OBS_60_CNT_SOCIAL_CIRCLE as observed_social_circle,
     DEF_60_CNT_SOCIAL_CIRCLE as default_social_circle,
