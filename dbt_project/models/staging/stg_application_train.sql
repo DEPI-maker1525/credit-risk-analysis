@@ -1,3 +1,7 @@
+WITH avg_annuity_ratio AS (
+    SELECT AVG(AMT_CREDIT / AMT_ANNUITY) as avg_ratio
+    FROM {{ source('raw', 'application_train') }}
+)
 SELECT
     SK_ID_CURR as member_id,
     NAME_CONTRACT_TYPE as contract_type,
@@ -7,8 +11,11 @@ SELECT
     CNT_CHILDREN as num_children,
     AMT_INCOME_TOTAL as annual_income,
     AMT_CREDIT as total_loan_amount,
-    AMT_ANNUITY as monthly_loan_amount,
-    AMT_GOODS_PRICE as goods_price,
+    COALESCE(
+        AMT_ANNUITY,
+        AMT_CREDIT / (SELECT avg_ratio FROM avg_annuity_ratio)
+    ) as monthly_loan_amount,
+    (COALESCE(AMT_GOODS_PRICE, AMT_CREDIT)) as goods_price,
     NAME_INCOME_TYPE as job_type,
     NAME_EDUCATION_TYPE as education_type,
     NAME_FAMILY_STATUS as family_status,
@@ -17,7 +24,7 @@ SELECT
     DAYS_EMPLOYED as days_employed,
     DAYS_ID_PUBLISH as days_id_changed,
     OCCUPATION_TYPE as occupation_type,
-    CNT_FAM_MEMBERS as num_family_members,
+    (COALESCE(CNT_FAM_MEMBERS, 0)) as num_family_members,
     REGION_RATING_CLIENT_W_CITY as region_rating_city,
     ORGANIZATION_TYPE as organization_type,
     (
@@ -25,10 +32,6 @@ SELECT
         COALESCE(EXT_SOURCE_2, 0) +
         COALESCE(EXT_SOURCE_3, 0)
     ) / 3 as avg_external_sources,
-    DAYS_LAST_PHONE_CHANGE as days_last_phone_change,
-    OBS_60_CNT_SOCIAL_CIRCLE as observed_social_circle,
-    DEF_60_CNT_SOCIAL_CIRCLE as default_social_circle,
-    AMT_REQ_CREDIT_BUREAU_MON as bureau_credit_request_last_month,
-    AMT_REQ_CREDIT_BUREAU_YEAR as bureau_credit_request_last_year,
+    (COALESCE(DAYS_LAST_PHONE_CHANGE, 0)) as days_last_phone_change,
     TARGET as target
 FROM {{ source('raw', 'application_train') }}
