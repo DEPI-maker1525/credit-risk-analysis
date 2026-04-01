@@ -1,0 +1,82 @@
+version: 2
+
+models:
+  - name: stg_bureau
+    columns:
+      - name: loan_id
+        tests:
+          - not_null
+
+      - name: bureau_id
+        tests:
+          - not_null
+          - unique
+
+      - name: loan_active
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Closed', 'Active', 'Sold', 'Bad debt']
+
+      - name: days_loan
+        tests:
+          - not_null
+          - negative_values
+
+      - name: curr_loan_days_overdue
+        tests:
+          - not_null
+          - positive_values
+
+      - name: days_loan_enddate_active
+        tests:
+          - not_null
+          - range_check:
+              n1: -9999
+              n2: 9999
+
+      - name: days_loan_enddate_closed
+        tests:
+          - negative_values
+          - range_check:
+              n1: -3650
+              n2: 0
+
+      - name: has_overdue
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+
+      - name: max_overdue_amount
+        tests:
+          - not_null
+          - positive_values
+
+      - name: num_loan_prolong
+        tests:
+          - not_null
+          - positive_values
+
+      - name: former_loan_total
+        tests:
+          - not_null
+          - positive_values
+
+      - name: loan_remainder_debt
+        tests:
+          - positive_values
+
+      - name: curr_loan_overdue
+        tests:
+          - not_null
+          - positive_values
+
+      - name: loan_type
+        tests:
+          - not_null
+
+      - name: days_loan_update
+        tests:
+          - not_null
+          - negative_values

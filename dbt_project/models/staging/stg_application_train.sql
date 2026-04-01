@@ -3,7 +3,7 @@ WITH avg_annuity_ratio AS (
     FROM {{ source('raw', 'application_train') }}
 )
 SELECT
-    SK_ID_CURR as member_id,
+    SK_ID_CURR as loan_id,
     NAME_CONTRACT_TYPE as contract_type,
     CODE_GENDER as gender,
     FLAG_OWN_CAR as own_car,

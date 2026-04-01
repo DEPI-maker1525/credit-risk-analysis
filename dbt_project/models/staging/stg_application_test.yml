@@ -1,7 +1,7 @@
 version: 2
 
 models:
-    - name: stg_application_train
+    - name: stg_application_test
       columns:
         - name: loan_id
           tests:
@@ -109,9 +109,3 @@ models:
           tests: 
             - not_null
             - negative_values
-
-        - name: target
-          tests:
-            - not_null
-            - accepted_values:
-                values: [0, 1]

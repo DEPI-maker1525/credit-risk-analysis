@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_POS_CASH_balance
+    columns:
+      - name: prev_bureau_id
+        tests:
+          - not_null
+      
+      - name: loan_id
+        tests:
+          - not_null
+
+      - name: months_balance
+        tests:
+          - not_null
+          - negative_values
+      
+      - name: num_instalment
+        tests:
+          - not_null
+          - positive_values
+
+      - name: former_loan_status
+        tests:
+          - not_null

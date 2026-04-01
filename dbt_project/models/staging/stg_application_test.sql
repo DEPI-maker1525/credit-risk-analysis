@@ -3,7 +3,7 @@ WITH avg_annuity_ratio AS (
     FROM {{ source('raw', 'application_train') }}
 )
 SELECT
-    SK_ID_CURR as member_id,
+    SK_ID_CURR as loan_id,
     NAME_CONTRACT_TYPE as contract_type,
     CODE_GENDER as gender,
     FLAG_OWN_CAR as own_car,
@@ -25,7 +25,7 @@ SELECT
     DAYS_ID_PUBLISH as days_id_changed,
     OCCUPATION_TYPE as occupation_type,
     (COALESCE(CNT_FAM_MEMBERS, 0)) as num_family_members,
-    REGION_RATING_CLIENT_W_CITY as region_rating_city,
+    ABS(REGION_RATING_CLIENT_W_CITY) as region_rating_city,
     ORGANIZATION_TYPE as organization_type,
     (
         COALESCE(EXT_SOURCE_1, 0) +

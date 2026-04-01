@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: stg_bureau_balance
+    columns:
+      - name: bureau_id
+        tests:
+          - not_null
+
+      - name: months_balance
+        tests: 
+          - not_null
+          - negative_values
+
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['C', '0', 'X', '1', '5', '2', '3', '4']
