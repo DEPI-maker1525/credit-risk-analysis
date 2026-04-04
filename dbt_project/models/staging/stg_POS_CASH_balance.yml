@@ -2,25 +2,49 @@ version: 2
 
 models:
   - name: stg_POS_CASH_balance
+    description: |
+      Staging model for POS_CASH_balance table.
+      Monthly balance information for previous point-of-sale (POS) and cash loans.
+      One row per month per previous POS/cash credit.
     columns:
-      - name: prev_bureau_id
+      - name: prev_credit_id
+        description: Unique identifier for the previous credit (SK_ID_PREV)
         tests:
           - not_null
-      
-      - name: loan_id
+
+      - name: client_id
+        description: Unique client identifier (SK_ID_CURR - links to stg_application)
         tests:
           - not_null
 
       - name: months_balance
+        description: |
+          Number of months before the current application when this balance was observed.
+          Negative values (e.g. -1 = most recent month).
         tests:
           - not_null
           - negative_values
-      
+
       - name: num_instalment
+        description: Total number of installments in the original contract
         tests:
           - not_null
           - positive_values
 
-      - name: former_loan_status
+      - name: num_instalment_future
+        description: Number of remaining/future installments at the time of observation
+        tests:
+          - positive_values
+
+      - name: contract_status
+        description: Current status of the previous POS/Cash contract
         tests:
           - not_null
+          - accepted_values:
+              values: ['Active', 'Completed', 'Signed', 'Approved', 'Returned to the store', 'Demand', 'Canceled', 'XNA','Amortized debt']
+
+      - name: dpd_def
+        description: Days Past Due (DPD) during the month with tolerance (def = default tolerance)
+        tests:
+          - not_null
+          - positive_values

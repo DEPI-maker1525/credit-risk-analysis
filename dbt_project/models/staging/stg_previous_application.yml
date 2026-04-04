@@ -2,52 +2,93 @@ version: 2
 
 models:
   - name: stg_previous_application
+    description: |
+      Staging model for previous_application table.
+      Contains information about all previous applications the client made with Home Credit.
+      One row per previous application.
     columns:
-      - name: prev_bureau_id
+      - name: prev_credit_id
+        description: Unique identifier for each previous application (SK_ID_PREV)
         tests:
           - not_null
           - unique
 
-      - name: loan_id
+      - name: client_id
+        description: Unique client identifier (SK_ID_CURR - links to stg_application)
         tests:
           - not_null
 
       - name: contract_type
+        description: Type of previous contract (Cash loans, Consumer loans, Revolving loans, XNA)
         tests:
           - not_null
           - accepted_values:
-              values: ['Cash loans', 'Consumer loans', 'Revolving loans', 'Other']
+              values: ['Cash loans', 'Consumer loans', 'Revolving loans', 'XNA']
 
       - name: monthly_loan_amount
+        description: Annuity (monthly payment) of the previous application
         tests:
           - positive_values
 
       - name: loan_amount_approved
-        tests: 
-          - positive_values
-      
-      - name: goods_price
+        description: Credit amount that was approved in the previous application
         tests:
           - positive_values
-      
+
+      - name: goods_price
+        description: Price of the goods for which the loan was applied
+        tests:
+          - positive_values
+
       - name: loan_purpose
+        description: Purpose of the cash loan
         tests:
           - not_null
-      
+
       - name: contract_status
+        description: Final status of the previous application
         tests:
           - not_null
           - accepted_values:
               values: ['Approved', 'Canceled', 'Refused', 'Unused offer']
-      
+
       - name: reject_reason
+        description: Reason why the application was rejected (if applicable)
         tests:
-          - not_null
           - accepted_values:
               values: ['XAP', 'HC', 'LIMIT', 'SCO', 'CLIENT', 'SCOFR', 'XNA', 'VERIF', 'SYSTEM']
 
-      - name: installment_group
+      - name: yield_group
+        description: Yield group of the previous application (interest rate category)
+        tests:
+          - accepted_values:
+              values: ['middle', 'low_action', 'high', 'low_normal', 'XNA']
+
+      - name: product_combination
+        description: Combination of product type and sales channel
+
+      - name: days_decision
+        description: How many days before current application was the decision made on this previous application
+        tests:
+          - negative_values
+
+      - name: payment_type
+        description: Payment method chosen by the client
         tests:
           - not_null
-          - accepted_values: 
-              values: ['middle', 'low_action', 'high', 'low_normal', 'XNA']
+
+      - name: client_type
+        description: Type of client (Repeater, New, Refreshed, XNA)
+        tests:
+          - not_null
+
+      - name: goods_category
+        description: Category of the goods being purchased
+        tests:
+          - not_null
+
+      - name: is_insured
+        description: Flag whether the client was insured on this previous application (1 = Yes, 0 = No)
+        tests:
+          - accepted_values:
+              values: [0, 1]

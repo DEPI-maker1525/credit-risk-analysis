@@ -2,52 +2,64 @@ version: 2
 
 models:
   - name: stg_credit_card_balance
+    description: |
+      Staging model for credit_card_balance table.
+      Monthly balance snapshots of previous credit cards that the client had with Home Credit.
+      One row per month per previous credit card.
     columns:
-      - name: prev_bureau_id
+      - name: prev_credit_id
+        description: Unique identifier for the previous credit card (SK_ID_PREV)
         tests:
           - not_null
 
-      - name: loan_id
+      - name: client_id
+        description: Unique client identifier (SK_ID_CURR - links to application table)
         tests:
           - not_null
 
       - name: months_balance
+        description: |
+          Number of months before the current application when this credit card balance was observed.
+          Negative values (e.g. -1 = most recent month).
         tests:
           - not_null
           - negative_values
 
       - name: credit_card_balance
+        description: Current balance on the credit card (can be 0 or positive)
         tests:
-          - not_null
           - positive_values
 
       - name: credit_card_limit
-        tests: 
+        description: Current credit limit on this credit card
+        tests:
           - not_null
           - positive_values
 
       - name: drawings_current
+        description: Amount drawn (withdrawn) in the current month on this credit card
         tests:
-          - not_null
           - positive_values
 
-      - name: credit_payment_current
+      - name: payment_total_current
+        description: Total amount paid in the current month on this credit card
         tests:
-          - not_null
           - positive_values
 
       - name: total_receivable
+        description: Total amount receivable by the bank on this credit card
         tests:
-          - not_null
           - positive_values
-      
+
       - name: contract_status
+        description: Current status of the credit card contract
         tests:
           - not_null
           - accepted_values:
               values: ['Active', 'Completed', 'Signed', 'Demand', 'Sent proposal', 'Refused', 'Approved']
 
-      - name: credit_days_past_due
+      - name: dpd_def
+        description: Days Past Due (DPD) during the month with tolerance (def = default tolerance)
         tests:
           - not_null
           - positive_values

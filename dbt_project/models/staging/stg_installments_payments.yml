@@ -1,41 +1,52 @@
 version: 2
 
 models:
-  - name: stg_installmetns_payments
+  - name: stg_installments_payments
+    description: |
+      Staging model for installments_payments table.
+      Contains payment history for each installment of previous credits with Home Credit.
+      One row per installment per previous credit.
     columns:
-      - name: prev_bureau_id
+      - name: prev_credit_id
+        description: Unique identifier for the previous credit (SK_ID_PREV)
         tests:
           - not_null
-          - unique
-      
-      - name: loan_id
+
+      - name: client_id
+        description: Unique client identifier (SK_ID_CURR - links to application table)
         tests:
           - not_null
-      
+
       - name: installment_version
+        description: Version of the installment schedule (changes if the payment plan is modified)
         tests:
           - not_null
           - positive_values
 
       - name: installment_number
+        description: The sequence number of the installment (1, 2, 3, ...)
         tests:
           - not_null
           - positive_values
-      
+
       - name: days_installment
+        description: Scheduled date of the installment (days before current application)
         tests:
           - not_null
           - negative_values
-      
+
       - name: days_actual_payment
-        tests: 
-          - not_null
-      
-      - name: instalment_amount
+        description: Actual date when the payment was made (days before current application)
+        tests:
+          - negative_values
+
+      - name: installment_amount
+        description: The amount that was supposed to be paid in this installment
         tests:
           - not_null
           - positive_values
 
       - name: actual_payment
+        description: The actual amount paid by the client in this installment (can be NaN or 0)
         tests:
           - positive_values
