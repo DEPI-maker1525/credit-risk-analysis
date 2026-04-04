@@ -1,111 +1,139 @@
 version: 2
 
 models:
-    - name: stg_application_test
-      columns:
-        - name: loan_id
-          tests:
-            - not_null
-            - unique
+  - name: stg_application_test
+    description: |
+      Staging model for application_test table from Home Credit dataset.
+      Basic cleaning, renaming to snake_case, and light anomaly handling.
+      No heavy feature engineering (kept for intermediate layer).
+    columns:
+      - name: loan_id
+        description: Unique loan identifier (SK_ID_CURR)
+        tests:
+          - not_null
+          - unique
 
-        - name: contract_type
-          tests:
-            - not_null
-            - accepted_values:
-                values: ['Cash loans', 'Revolving loans']
+      - name: contract_type
+        description: Type of loan (Cash loans or Revolving loans)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Cash loans', 'Revolving loans']
 
-        - name: gender
-          tests: 
-            - not_null
-            - accepted_values:
-                values: ['M', 'F', 'XNA']
+      - name: gender
+        description: Applicant gender
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['M', 'F', 'XNA']
 
-        - name: own_car
-          tests:
-            - not_null
-            - accepted_values:
-                values: ['Y', 'N']
+      - name: own_car
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Y', 'N']
 
-        - name: own_realty
-          tests:
-            - not_null
-            - accepted_values:
-                values: ['Y', 'N']
+      - name: own_realty
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Y', 'N']
 
-        - name: num_children
-          tests: 
-            - not_null
-            - positive_values
+      - name: num_children
+        description: Number of children
+        tests:
+          - not_null
+          - positive_values 
 
-        - name: annual_income
-          tests:
-            - not_null
-            - positive_values
+      - name: annual_income
+        tests:
+          - not_null
+          - positive_values
 
-        - name: total_loan_amount
-          tests:
-            - not_null
-            - positive_values
+      - name: total_loan_amount
+        tests:
+          - not_null
+          - positive_values
 
-        - name: monthly_loan_amount
-          tests:
-            - not_null
-            - positive_values
+      - name: monthly_loan_amount
+        description: AMT_ANNUITY (left as-is, NaNs will be handled in intermediate)
+        tests:
+          - positive_values
 
-        - name: goods_price
-          tests: 
-            - not_null
-            - positive_values
-        
-        - name: job_type
-          tests:
-            - not_null
-            - accepted_values:
-                values: ['Working', 'Commercial associate', 'Pensioner', 'State servant', 'Unemployed', 'Student', 'Businessman', 'Maternity leave']
+      - name: goods_price
+        tests:
+          - not_null
+          - positive_values
 
-        - name: education_type
-          tests: 
-            - not_null
-            - accepted_values:
-                values: ['Secondary / secondary special', 'Higher education', 'Incomplete higher', 'Lower secondary', 'Academic degree']
+      - name: income_type
+        description: Type of income (renamed from NAME_INCOME_TYPE)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Working', 'Commercial associate', 'Pensioner', 'State servant', 'Unemployed', 'Student', 'Businessman', 'Maternity leave']
 
-        - name: housing_type
-          tests:
-            - not_null
-            - accepted_values:
-                values: ['House / apartment', 'With parents', 'Municipal apartment', 'Rented apartment', 'Office apartment', 'Co-op apartment']
-        
-        - name: age_day_application
-          tests:
-            - not_null
-            - negative_values
+      - name: education_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Secondary / secondary special', 'Higher education', 'Incomplete higher', 'Lower secondary', 'Academic degree']
 
-        - name: days_id_changed
-          tests:
-            - not_null
-            - negative_values
+      - name: family_status
+        description: Family status (added for completeness)
+        tests:
+          - not_null
 
-        - name: num_family_members
-          tests:
-            - not_null
-            - positive_values
+      - name: housing_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['House / apartment', 'With parents', 'Municipal apartment', 'Rented apartment', 'Office apartment', 'Co-op apartment']
 
-        - name: region_rating_city
-          tests:
-            - not_null
-            - accepted_values:
-                values: [1, 2, 3]
-        
-        - name: organization_type
-          tests:
-            - not_null
+      - name: days_birth
+        description: Age in days at application (negative value)
+        tests:
+          - not_null
+          - negative_values 
 
-        - name: avg_external_sources
-          tests:
-            - not_null
-            - normalize
-        
-        - name: days_last_phone_change
-          tests: 
-            - not_null
-            - negative_values
+      - name: days_employed
+        description: Days employed (original, includes anomaly 365243)
+        tests:
+          - not_null
+
+      - name: days_employed_clean
+        description: Days employed with anomaly 365243 replaced by NULL
+        tests:
+          - negative_values_0 
+
+      - name: is_employment_anomaly
+        description: Flag = 1 if DAYS_EMPLOYED was 365243 (pensioner anomaly)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+
+      - name: days_id_publish
+        tests:
+          - not_null
+          - negative_values
+
+      - name: num_family_members
+        tests:
+          - not_null
+          - positive_values_0 
+
+      - name: region_rating_city
+        tests:
+          - not_null
+          - range_check:
+              n1: 1
+              n2: 3
+
+      - name: organization_type
+        tests:
+          - not_null
+
+      - name: days_last_phone_change
+        tests:
+          - not_null
+          - negative_values

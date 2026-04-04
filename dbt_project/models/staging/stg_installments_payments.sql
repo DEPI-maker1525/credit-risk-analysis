@@ -8,4 +8,3 @@ SELECT
     AMT_INSTALMENT as instalment_amount,
     AMT_PAYMENT as actual_payment
 FROM {{ source('raw', 'installments_payments') }}
-

@@ -2,81 +2,105 @@ version: 2
 
 models:
   - name: stg_bureau
+    description: |
+      Staging model for bureau table (previous credits from other institutions).
+      Only renaming to snake_case + basic flags. 
+      No capping, no imputation, no aggregates (done in intermediate layer).
     columns:
-      - name: loan_id
+      - name: client_id
+        description: Unique client identifier (SK_ID_CURR from application table)
         tests:
           - not_null
 
       - name: bureau_id
+        description: Unique identifier for each previous credit in Bureau database (SK_ID_BUREAU)
         tests:
           - not_null
           - unique
 
-      - name: loan_active
+      - name: credit_active
+        description: Status of the previous credit (Active, Closed, Sold, Bad debt)
         tests:
           - not_null
           - accepted_values:
               values: ['Closed', 'Active', 'Sold', 'Bad debt']
 
-      - name: days_loan
+      - name: credit_currency
+        description: Currency in which the previous credit was denominated
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['currency 1', 'currency 2', 'currency 3', 'currency 4']
+
+      - name: days_credit
+        description: How many days before current application did client apply for the previous credit (negative value)
         tests:
           - not_null
           - negative_values
 
-      - name: curr_loan_days_overdue
+      - name: credit_day_overdue
+        description: Number of days the previous credit is overdue at the time of application
         tests:
           - not_null
           - positive_values
 
-      - name: days_loan_enddate_active
-        tests:
-          - not_null
-          - range_check:
-              n1: -9999
-              n2: 9999
+      - name: days_credit_enddate
+        description: Remaining days until the end date of the previous credit (can be positive or negative)
 
-      - name: days_loan_enddate_closed
+      - name: days_enddate_fact
+        description: Actual days when the previous credit ended (for closed credits)
         tests:
           - negative_values
-          - range_check:
-              n1: -3650
-              n2: 0
 
-      - name: has_overdue
+      - name: credit_max_overdue
+        description: Maximum overdue amount observed on this previous credit
+        tests:
+          - positive_values
+
+      - name: num_credit_prolong
+        description: How many times was this credit prolonged
+        tests:
+          - not_null
+          - positive_values
+
+      - name: credit_sum
+        description: Total amount of the previous credit
+        tests:
+          - positive_values
+
+      - name: credit_sum_debt
+        description: Remaining debt on the previous credit
+        tests:
+          - positive_values
+
+      - name: credit_sum_limit
+        description: Credit card limit (only relevant for revolving credits)
+        tests:
+          - positive_values
+
+      - name: credit_sum_overdue
+        description: Current overdue amount on this previous credit
+        tests:
+          - positive_values
+
+      - name: credit_type
+        description: Type of previous credit (Consumer credit, Credit card, Mortgage, Car loan, etc.)
+        tests:
+          - not_null
+
+      - name: days_credit_update
+        description: How many days before current application was the last update on this credit information
+
+      - name: has_overdue_flag
+        description: Flag indicating whether this previous credit ever had an overdue amount (1 = Yes, 0 = No)
         tests:
           - not_null
           - accepted_values:
               values: [0, 1]
 
-      - name: max_overdue_amount
+      - name: missing_enddate_active_flag
+        description: Flag indicating an active credit with missing end date (1 = Yes, 0 = No)
         tests:
           - not_null
-          - positive_values
-
-      - name: num_loan_prolong
-        tests:
-          - not_null
-          - positive_values
-
-      - name: former_loan_total
-        tests:
-          - not_null
-          - positive_values
-
-      - name: loan_remainder_debt
-        tests:
-          - positive_values
-
-      - name: curr_loan_overdue
-        tests:
-          - not_null
-          - positive_values
-
-      - name: loan_type
-        tests:
-          - not_null
-
-      - name: days_loan_update
-        tests:
-          - not_null
-          - negative_values
+          - accepted_values:
+              values: [0, 1]

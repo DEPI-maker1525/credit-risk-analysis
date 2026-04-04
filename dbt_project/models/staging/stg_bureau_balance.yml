@@ -2,18 +2,32 @@ version: 2
 
 models:
   - name: stg_bureau_balance
+    description: |
+      Staging model for bureau_balance table.
+      Contains monthly balance status for each previous credit reported in Bureau.
+      One row per month per previous loan.
     columns:
       - name: bureau_id
+        description: Unique identifier for the previous credit (links to stg_bureau.bureau_id)
         tests:
           - not_null
 
       - name: months_balance
-        tests: 
+        description: |
+          Number of months before the current application when this balance was observed.
+          Negative values (e.g. -1 = last month, -12 = 12 months ago).
+        tests:
           - not_null
           - negative_values
 
       - name: status
+        description: |
+          Status of the credit bureau balance for that month:
+          - C = Closed
+          - 0 = No DPD (days past due)
+          - X = Unknown / No status
+          - 1 to 5 = Number of days past due (1=1-30 days, 5=more than 120 days)
         tests:
           - not_null
           - accepted_values:
-              values: ['C', '0', 'X', '1', '5', '2', '3', '4']
+              values: ['C', '0', 'X', '1', '2', '3', '4', '5']
