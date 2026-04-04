@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: stg_credit_card_balance
+    columns:
+      - name: prev_bureau_id
+        tests:
+          - not_null
+
+      - name: loan_id
+        tests:
+          - not_null
+
+      - name: months_balance
+        tests:
+          - not_null
+          - negative_values
+
+      - name: credit_card_balance
+        tests:
+          - not_null
+          - positive_values
+
+      - name: credit_card_limit
+        tests: 
+          - not_null
+          - positive_values
+
+      - name: drawings_current
+        tests:
+          - not_null
+          - positive_values
+
+      - name: credit_payment_current
+        tests:
+          - not_null
+          - positive_values
+
+      - name: total_receivable
+        tests:
+          - not_null
+          - positive_values
+      
+      - name: contract_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Active', 'Completed', 'Signed', 'Demand', 'Sent proposal', 'Refused', 'Approved']
+
+      - name: credit_days_past_due
+        tests:
+          - not_null
+          - positive_values

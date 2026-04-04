@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: stg_previous_application
+    columns:
+      - name: prev_bureau_id
+        tests:
+          - not_null
+          - unique
+
+      - name: loan_id
+        tests:
+          - not_null
+
+      - name: contract_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Cash loans', 'Consumer loans', 'Revolving loans', 'Other']
+
+      - name: monthly_loan_amount
+        tests:
+          - positive_values
+
+      - name: loan_amount_approved
+        tests: 
+          - positive_values
+      
+      - name: goods_price
+        tests:
+          - positive_values
+      
+      - name: loan_purpose
+        tests:
+          - not_null
+      
+      - name: contract_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Approved', 'Canceled', 'Refused', 'Unused offer']
+      
+      - name: reject_reason
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['XAP', 'HC', 'LIMIT', 'SCO', 'CLIENT', 'SCOFR', 'XNA', 'VERIF', 'SYSTEM']
+
+      - name: installment_group
+        tests:
+          - not_null
+          - accepted_values: 
+              values: ['middle', 'low_action', 'high', 'low_normal', 'XNA']

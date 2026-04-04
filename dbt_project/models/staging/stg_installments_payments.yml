@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: stg_installmetns_payments
+    columns:
+      - name: prev_bureau_id
+        tests:
+          - not_null
+          - unique
+      
+      - name: loan_id
+        tests:
+          - not_null
+      
+      - name: installment_version
+        tests:
+          - not_null
+          - positive_values
+
+      - name: installment_number
+        tests:
+          - not_null
+          - positive_values
+      
+      - name: days_installment
+        tests:
+          - not_null
+          - negative_values
+      
+      - name: days_actual_payment
+        tests: 
+          - not_null
+      
+      - name: instalment_amount
+        tests:
+          - not_null
+          - positive_values
+
+      - name: actual_payment
+        tests:
+          - positive_values
