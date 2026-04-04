@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 SELECT
     SK_ID_PREV as prev_bureau_id,
     SK_ID_CURR as loan_id,
