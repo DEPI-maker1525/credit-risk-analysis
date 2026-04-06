@@ -34,7 +34,7 @@ cleaned AS (
         COALESCE(CNT_FAM_MEMBERS, 0)                    AS num_family_members,
         ABS(REGION_RATING_CLIENT_W_CITY)                AS region_rating_city,
         ORGANIZATION_TYPE                               AS organization_type,
-        COALESCE(DAYS_LAST_PHONE_CHANGE, 0)                          AS days_last_phone_change,
+        COALESCE(DAYS_LAST_PHONE_CHANGE, 0)             AS days_last_phone_change,
 
         CASE WHEN DAYS_EMPLOYED = 365243 THEN 1 ELSE 0 END AS is_employment_anomaly
 
