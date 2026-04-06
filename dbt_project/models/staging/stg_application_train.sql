@@ -27,6 +27,9 @@ cleaned AS (
             ELSE DAYS_EMPLOYED 
         END                                             AS days_employed_clean,
         DAYS_ID_PUBLISH                                 AS days_id_publish,
+        (COALESCE(EXT_SOURCE_1, 0) +
+        COALESCE(EXT_SOURCE_2, 0) +
+        COALESCE(EXT_SOURCE_3, 0)) / 3                  AS extra_sources,
         OCCUPATION_TYPE                                 AS occupation_type,
         COALESCE(CNT_FAM_MEMBERS, 0)                    AS num_family_members,
         ABS(REGION_RATING_CLIENT_W_CITY)                AS region_rating_city,

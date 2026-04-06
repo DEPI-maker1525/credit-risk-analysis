@@ -7,7 +7,6 @@ SELECT
     SK_ID_CURR                                      AS client_id,
     SK_ID_BUREAU                                    AS bureau_id,
     CREDIT_ACTIVE                                   AS credit_active,
-    CREDIT_CURRENCY                                 AS credit_currency,
     DAYS_CREDIT                                     AS days_credit,
     CREDIT_DAY_OVERDUE                              AS credit_day_overdue,
     DAYS_CREDIT_ENDDATE                             AS days_credit_enddate,

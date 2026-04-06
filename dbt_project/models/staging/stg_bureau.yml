@@ -25,13 +25,6 @@ models:
           - accepted_values:
               values: ['Closed', 'Active', 'Sold', 'Bad debt']
 
-      - name: credit_currency
-        description: Currency in which the previous credit was denominated
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['currency 1', 'currency 2', 'currency 3', 'currency 4']
-
       - name: days_credit
         description: How many days before current application did client apply for the previous credit (negative value)
         tests:

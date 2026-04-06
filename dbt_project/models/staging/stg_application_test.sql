@@ -25,6 +25,9 @@ cleaned AS (
             WHEN DAYS_EMPLOYED = 365243 THEN NULL 
             ELSE DAYS_EMPLOYED 
         END                                             AS days_employed_clean,
+        (COALESCE(EXT_SOURCE_1, 0) +
+        COALESCE(EXT_SOURCE_2, 0) +
+        COALESCE(EXT_SOURCE_3, 0)) / 3                  AS extra_sources,
         DAYS_ID_PUBLISH                                 AS days_id_publish,
         OCCUPATION_TYPE                                 AS occupation_type,
         COALESCE(CNT_FAM_MEMBERS, 0)                    AS num_family_members,
