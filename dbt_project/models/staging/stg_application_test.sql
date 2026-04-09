@@ -29,7 +29,7 @@ cleaned AS (
         COALESCE(EXT_SOURCE_2, 0) +
         COALESCE(EXT_SOURCE_3, 0)) / 3                  AS extra_sources,
         DAYS_ID_PUBLISH                                 AS days_id_publish,
-        OCCUPATION_TYPE                                 AS occupation_type,
+        COALESCE(OCCUPATION_TYPE, 'Unknown')            AS occupation_type,
         COALESCE(CNT_FAM_MEMBERS, 0)                    AS num_family_members,
         ABS(REGION_RATING_CLIENT_W_CITY)                AS region_rating_city,
         ORGANIZATION_TYPE                               AS organization_type,
