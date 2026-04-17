@@ -1,3 +1,4 @@
+-- int bureau_client_agg
 WITH transformed AS (
     SELECT
         client_id,
