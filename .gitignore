@@ -17,3 +17,4 @@ dbt_project/target/
 # OS junk
 .DS_Store
 Thumbs.db
+.bruin.yml

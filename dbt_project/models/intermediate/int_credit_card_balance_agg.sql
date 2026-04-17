@@ -17,7 +17,7 @@ client_level AS (
 
         COALESCE(ROUND(AVG(CASE 
                 WHEN credit_card_limit > 0 THEN credit_card_balance / credit_card_limit
-            END)), 0)                                   AS avg_utilization_ratio,
+            END)), 0)                                AS avg_utilization_ratio,
 
         SUM(drawings_current)                        AS total_drawings,
         SUM(payment_total_current)                   AS total_payments_made,
@@ -25,7 +25,7 @@ client_level AS (
         ROUND(AVG(total_receivable), 2)              AS avg_total_receivable,
         MAX(total_receivable)                        AS max_total_receivable,
 
-        SUM(CASE WHEN dpd_def > 0 THEN 1 ELSE 0 END)      AS months_with_dpd,
+        SUM(CASE WHEN dpd_def > 0 THEN 1 ELSE 0 END) AS months_with_dpd,
 
         MAX(CASE WHEN credit_card_balance > credit_card_limit THEN 1 ELSE 0 END) AS ever_over_limit_flag
 
