@@ -29,4 +29,8 @@ SELECT
     b.has_high_risk_status
 FROM application_base ap
 LEFT JOIN bureau_client b ON ap.loan_id = b.client_id
+<<<<<<< HEAD
 WHERE ap.target IS NOT NULL
+=======
+WHERE ap.target IS NOT NULL
+>>>>>>> c48c5f6368520f93fb4e4af0cd396247a3f03e41

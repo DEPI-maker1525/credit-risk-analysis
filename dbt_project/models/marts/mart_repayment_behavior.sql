@@ -1,4 +1,3 @@
-
 -- mart_repayment_behaviour
 WITH application_base AS (
     SELECT * FROM {{ ref('int_application_base') }}
