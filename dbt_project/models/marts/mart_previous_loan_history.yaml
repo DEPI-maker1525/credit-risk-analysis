@@ -1,0 +1,155 @@
+version: 2
+
+models:
+  - name: mart_previous_loan_history
+    description: >
+      Business-facing mart that combines the applicant's current loan profile
+      with their full history of previous applications at Home Credit and their
+      credit card behavior. Each row represents a single loan applicant enriched
+      with aggregated previous application data and credit card balance history.
+      This table is designed for dashboard reporting on customer loyalty, past
+      approval patterns, and credit card usage risk. Only applicants with a
+      known default target are included.
+
+    columns:
+      - name: loan_id
+        description: Unique identifier for each loan applicant.
+
+      - name: target
+        description: >
+          Loan default label. 1 indicates the client had payment difficulties,
+          0 indicates no payment issues. Primary outcome variable for credit
+          risk analysis.
+
+      - name: annual_income
+        description: Total annual income of the applicant in local currency.
+
+      - name: total_loan_amount
+        description: Total credit amount requested or granted for the current loan.
+
+      - name: monthly_loan_amount
+        description: Monthly annuity payment amount for the current loan in local currency.
+
+      - name: contract_type
+        description: >
+          Type of the current loan contract. Either 'Cash loans' or
+          'Revolving loans'.
+
+      - name: income_type
+        description: >
+          Category of the applicant's income source. Examples include
+          'Working', 'Commercial associate', 'Pensioner', 'State servant'.
+
+      - name: total_previous_applications
+        description: >
+          Total number of previous loan applications the client has submitted
+          to Home Credit, regardless of outcome.
+
+      - name: num_approved
+        description: >
+          Number of previous applications that were approved by Home Credit.
+          Used alongside total_previous_applications to assess approval rate.
+
+      - name: num_refused
+        description: >
+          Number of previous applications that were refused by Home Credit.
+          A high refusal count relative to total applications signals elevated
+          credit risk.
+
+      - name: num_canceled
+        description: >
+          Number of previous applications that were canceled, either by the
+          client or by Home Credit before a decision was made.
+
+      - name: avg_annuity_amount
+        description: >
+          Average monthly annuity amount across all previous approved loans
+          in local currency. Reflects the typical repayment burden the client
+          has historically carried.
+
+      - name: avg_loan_amount
+        description: >
+          Average total credit amount across all previous loan applications
+          in local currency. Indicates the typical loan size the client
+          has applied for historically.
+
+      - name: avg_down_payment
+        description: >
+          Average down payment amount made by the client across previous
+          loan applications in local currency. Higher values suggest greater
+          financial commitment and lower risk.
+
+      - name: most_contract_type
+        description: >
+          The most frequently occurring contract type across all previous
+          applications. Indicates the client's preferred or most common
+          loan product.
+
+      - name: most_client_type
+        description: >
+          The most frequently occurring client type across previous
+          applications. Examples include 'Repeater', 'New', 'Refreshed'.
+          Reflects the client's relationship history with Home Credit.
+
+      - name: total_is_insured
+        description: >
+          Total number of previous loans where the client opted for
+          insurance coverage. Higher values may indicate risk awareness
+          or product preference.
+
+      - name: months_observed
+        description: >
+          Total number of months the client's credit card activity was
+          observed and recorded. Reflects the length of the credit card
+          relationship with Home Credit.
+
+      - name: avg_balance
+        description: >
+          Average monthly credit card balance across the observation period
+          in local currency. Indicates typical spending or debt level on
+          the credit card.
+
+      - name: avg_credit_limit
+        description: >
+          Average credit limit assigned to the client's credit card across
+          the observation period in local currency.
+
+      - name: avg_utilization_ratio
+        description: >
+          Average ratio of credit card balance to credit limit across the
+          observation period. Values close to 1.0 indicate the client
+          consistently uses most of their available credit, which is a
+          risk signal.
+
+      - name: total_drawings
+        description: >
+          Total number of cash or purchase drawings made on the credit card
+          across the entire observation period. Reflects overall credit
+          card activity volume.
+
+      - name: total_payments_made
+        description: >
+          Total number of payments made toward the credit card balance
+          across the observation period. Higher values relative to drawings
+          suggest responsible repayment behavior.
+
+      - name: months_with_dpd
+        description: >
+          Number of months during the observation period where the client
+          had a Days Past Due (DPD) greater than zero on their credit card.
+          A higher count indicates a pattern of late payments.
+
+      - name: ever_over_limit_flag
+        description: >
+          Binary flag indicating whether the client ever exceeded their
+          credit card limit during the observation period. 1 means the
+          limit was breached at least once, 0 means it never was.
+
+      - name: credit_card_segment
+        description: >
+          Business-friendly label derived from avg_utilization_ratio that
+          categorizes the client's credit card usage behavior into four
+          tiers. 'Maxed Out' means utilization is 90% or above, 'High Usage'
+          means 60% to 89%, 'Moderate Usage' means 30% to 59%, and
+          'Low Usage' means below 30%. Useful for filtering and segmenting
+          clients in dashboards without interpreting raw ratios.

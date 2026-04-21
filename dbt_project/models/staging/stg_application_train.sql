@@ -6,7 +6,6 @@ WITH source AS (
 cleaned AS (
     SELECT
         SK_ID_CURR                                      AS loan_id,
-        TARGET                                          AS target,
         NAME_CONTRACT_TYPE                              AS contract_type,
         CODE_GENDER                                     AS gender,
         FLAG_OWN_CAR                                    AS own_car,
@@ -36,7 +35,8 @@ cleaned AS (
         ORGANIZATION_TYPE                               AS organization_type,
         COALESCE(DAYS_LAST_PHONE_CHANGE, 0)             AS days_last_phone_change,
 
-        CASE WHEN DAYS_EMPLOYED = 365243 THEN 1 ELSE 0 END AS is_employment_anomaly
+        CASE WHEN DAYS_EMPLOYED = 365243 THEN 1 ELSE 0 END AS is_employment_anomaly,
+        TARGET                                          AS target
 
     FROM source
 )

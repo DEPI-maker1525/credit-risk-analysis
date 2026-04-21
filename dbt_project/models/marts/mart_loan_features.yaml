@@ -1,0 +1,231 @@
+version: 2
+
+models:
+  - name: mart_loan_features_train
+    description: >
+      Wide flat table joining all intermediate aggregated tables onto the core
+      applicant base. Each row represents a single loan applicant with all
+      engineered features ready for machine learning model training.
+
+    columns:
+      # ── Application Base ────────────────────────────────────────────
+      - name: loan_id
+        description: Unique identifier for each loan applicant.
+
+      - name: target
+        description: Default label. 1 = payment difficulties, 0 = no issues.
+
+      - name: contract_type
+        description: Type of loan contract. Either 'Cash loans' or 'Revolving loans'.
+
+      - name: gender
+        description: Applicant gender. 'M' = Male, 'F' = Female.
+
+      - name: own_car
+        description: Whether the applicant owns a car. 'Y' or 'N'.
+
+      - name: own_realty
+        description: Whether the applicant owns real estate. 'Y' or 'N'.
+
+      - name: num_children
+        description: Number of children the applicant has.
+
+      - name: annual_income
+        description: Total annual income of the applicant in local currency.
+
+      - name: total_loan_amount
+        description: Total credit amount requested or granted for the current loan.
+
+      - name: monthly_loan_amount
+        description: Monthly annuity payment amount for the current loan.
+
+      - name: goods_price
+        description: Price of the goods the loan was taken for. Null for general cash loans.
+
+      - name: income_type
+        description: Category of the applicant's income source (e.g. 'Working', 'Pensioner').
+
+      - name: education_type
+        description: Highest education level completed (e.g. 'Secondary', 'Higher education').
+
+      - name: family_status
+        description: Marital status of the applicant (e.g. 'Married', 'Single').
+
+      - name: housing_type
+        description: Type of housing the applicant lives in (e.g. 'House / apartment').
+
+      - name: days_birth
+        description: Applicant age in days relative to application date. Negative value.
+
+      - name: days_employed
+        description: Days employed at current job relative to application date. Negative value.
+
+      - name: days_employed_clean
+        description: Cleaned version of days_employed with anomalous values handled.
+
+      - name: days_id_publish
+        description: Days since applicant's ID document was last published. Negative value.
+
+      - name: extra_sources
+        description: Normalized score derived from external data sources. Used as a risk signal.
+
+      - name: occupation_type
+        description: Applicant's job category (e.g. 'Laborers', 'Sales staff').
+
+      - name: num_family_members
+        description: Total number of family members in the applicant's household.
+
+      - name: region_rating_city
+        description: Home Credit's risk rating of the applicant's city. Scale 1 (best) to 3 (worst).
+
+      - name: organization_type
+        description: Type of organization where the applicant works (e.g. 'School', 'Trade').
+
+      - name: days_last_phone_change
+        description: Days since the applicant last changed their phone number. Negative value.
+
+      - name: is_employment_anomaly
+        description: Flag indicating the applicant has an anomalous employment duration value.
+
+      # ── Bureau Aggregates ────────────────────────────────────────────
+      - name: bureau_num_credits
+        description: Total number of credits ever reported to the bureau across all institutions.
+
+      - name: num_active_credits
+        description: Number of currently active credits at external institutions.
+
+      - name: num_curr_overdue
+        description: Number of credits currently overdue at external institutions.
+
+      - name: num_overdue_credits
+        description: Total number of credits ever overdue historically at external institutions.
+
+      - name: num_prolonged_credits
+        description: Number of credits that have been prolonged or restructured externally.
+
+      - name: total_debt
+        description: Total outstanding debt across all bureau credits in local currency.
+
+      - name: oldest_credit_days
+        description: Age in days of the applicant's oldest bureau credit record.
+
+      - name: newest_credit_days
+        description: Age in days of the applicant's most recent bureau credit record.
+
+      - name: num_credits_last_year
+        description: Number of new credits opened in the last year across external institutions.
+
+      - name: num_long_term
+        description: Number of long-term credits (e.g. mortgages) at external institutions.
+
+      - name: num_short_term
+        description: Number of short-term credits (e.g. consumer loans) at external institutions.
+
+      - name: num_business_credits
+        description: Number of business-related credits at external institutions.
+
+      - name: most_common_status
+        description: Most frequent credit status across all bureau records (e.g. 'Active', 'Closed').
+
+      - name: has_high_risk_status
+        description: Flag indicating at least one high-risk bureau status (e.g. bad debt). 1 = yes.
+
+      # ── POS Cash Balance Aggregates ──────────────────────────────────
+      - name: total_prev_installments
+        description: Total installments already paid across previous POS and cash loans.
+
+      - name: total_future_installments
+        description: Total installments remaining across active POS and cash loans.
+
+      - name: most_contract_type
+        description: Most frequent contract type across the applicant's POS and cash loan history.
+
+      - name: total_dpd_def
+        description: Total months in severe DPD DEF status (60+ days past due) across POS and cash loans.
+
+      # ── Installment Payment Aggregates ──────────────────────────────
+      - name: avg_delay
+        description: Average days late across all installment payments. Negative means early payment.
+
+      - name: late_count
+        description: Total number of installment payments made late.
+
+      - name: total_paid
+        description: Total amount paid across all installment obligations in local currency.
+
+      - name: total_remaining
+        description: Total outstanding amount still owed across all installments in local currency.
+
+      # ── Previous Application Aggregates ─────────────────────────────
+      - name: total_previous_applications
+        description: Total number of previous loan applications submitted to Home Credit.
+
+      - name: unique_contract_types
+        description: Number of distinct contract types used across previous applications.
+
+      - name: num_approved
+        description: Number of previous applications approved by Home Credit.
+
+      - name: num_refused
+        description: Number of previous applications refused by Home Credit.
+
+      - name: num_canceled
+        description: Number of previous applications canceled before a decision was made.
+
+      - name: avg_annuity_amount
+        description: Average monthly annuity amount across previous approved loans.
+
+      - name: avg_loan_amount
+        description: Average total credit amount across previous loan applications.
+
+      - name: avg_down_payment
+        description: Average down payment made by the client across previous loan applications.
+
+      - name: most_contract_type
+        description: Most frequent contract type across all previous applications.
+
+      - name: most_yield_group
+        description: Most frequent yield group assigned to previous loans. Internal pricing category.
+
+      - name: most_client_type
+        description: Most frequent client type across previous applications (e.g. 'Repeater', 'New').
+
+      - name: total_is_insured
+        description: Total number of previous loans where the client opted for insurance.
+
+      # ── Credit Card Balance Aggregates ──────────────────────────────
+      - name: months_observed
+        description: Total months of credit card activity observed for the applicant.
+
+      - name: avg_balance
+        description: Average monthly credit card balance across the observation period.
+
+      - name: max_balance
+        description: Maximum monthly credit card balance recorded across the observation period.
+
+      - name: avg_credit_limit
+        description: Average credit limit assigned to the applicant's credit card.
+
+      - name: max_credit_limit
+        description: Maximum credit limit ever assigned to the applicant's credit card.
+
+      - name: avg_utilization_ratio
+        description: Average ratio of credit card balance to credit limit. Values near 1.0 indicate high utilization.
+
+      - name: total_drawings
+        description: Total number of cash or purchase drawings made on the credit card.
+
+      - name: total_payments_made
+        description: Total number of payments made toward the credit card balance.
+
+      - name: avg_total_receivable
+        description: Average total receivable amount outstanding on the credit card per month.
+
+      - name: max_total_receivable
+        description: Maximum total receivable amount ever outstanding on the credit card.
+
+      - name: months_with_dpd
+        description: Number of months where the applicant had any days past due on the credit card.
+
+      - name: ever_over_limit_flag
+        description: Flag indicating the applicant ever exceeded their credit card limit. 1 = yes.

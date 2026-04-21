@@ -1,0 +1,108 @@
+version: 2
+
+models:
+  - name: mart_applicant_overview
+    description: >
+      Business-facing overview of loan applicants. Each row represents a single
+      loan applicant from the Home Credit dataset. This table is designed for
+      dashboard consumption and business reporting, focusing on demographic,
+      financial, and employment attributes of each applicant. Only applicants
+      with a known default target are included.
+
+    columns:
+      - name: client_id
+        description: Unique identifier for each loan applicant (renamed from loan_id).
+
+      - name: target
+        description: >
+          Loan default label. 1 indicates the client had payment difficulties
+          (late payments over X days), 0 indicates no payment issues. This is
+          the primary outcome variable for credit risk analysis.
+
+      - name: contract_type
+        description: Type of loan contract. Either 'Cash loans' or 'Revolving loans'.
+
+      - name: gender
+        description: Gender of the applicant. Values are 'M' (Male) or 'F' (Female).
+
+      - name: own_car
+        description: Whether the applicant owns a car. 'Y' for yes, 'N' for no.
+
+      - name: own_realty
+        description: >
+          Whether the applicant owns real estate property. 'Y' for yes,
+          'N' for no.
+
+      - name: num_children
+        description: Number of children the applicant has.
+
+      - name: annual_income
+        description: >
+          Total annual income of the applicant in local currency. Used as a
+          key indicator of repayment capacity.
+
+      - name: total_loan_amount
+        description: >
+          Total credit amount requested or granted for the loan in local
+          currency.
+
+      - name: monthly_loan_amount
+        description: >
+          Monthly annuity payment amount the applicant is expected to pay
+          in local currency.
+
+      - name: goods_price
+        description: >
+          Price of the goods or purpose for which the loan was taken, in
+          local currency. May be null for cash loans with no specific goods.
+
+      - name: income_type
+        description: >
+          Category of the applicant's income source. Examples include
+          'Working', 'Commercial associate', 'Pensioner', 'State servant'.
+
+      - name: age
+        description: >
+          Age of the applicant in years, derived by converting days_birth
+          (negative days relative to application date) into a positive
+          rounded age value.
+
+      - name: years_employed
+        description: >
+          Number of years the applicant has been employed at their current
+          job, derived from days_employed. Rounded to one decimal place.
+
+      - name: education_type
+        description: >
+          Highest level of education completed by the applicant. Examples
+          include 'Secondary', 'Higher education', 'Incomplete higher'.
+
+      - name: family_status
+        description: >
+          Marital or family status of the applicant. Examples include
+          'Married', 'Single / not married', 'Civil marriage', 'Separated'.
+
+      - name: housing_type
+        description: >
+          Type of housing the applicant lives in. Examples include
+          'House / apartment', 'With parents', 'Municipal apartment'.
+
+      - name: occupation_type
+        description: >
+          The applicant's occupation or job category. Examples include
+          'Laborers', 'Sales staff', 'Core staff'. May be null if not
+          provided.
+
+      - name: num_family_members
+        description: Total number of family members in the applicant's household.
+
+      - name: organization_type
+        description: >
+          Type of organization where the applicant is employed. Examples
+          include 'Business Entity Type 3', 'School', 'Government', 'Trade'.
+
+      - name: region_rating_city
+        description: >
+          Home Credit's internal rating of the city where the applicant
+          lives. Rated on a scale from 1 (best) to 3 (worst), reflecting
+          regional risk assessment.

@@ -1,0 +1,99 @@
+version: 2
+
+models:
+  - name: mart_repayment_behaviour
+    description: >
+      Business-facing mart that combines the applicant's current loan profile
+      with their repayment behavior history across POS/cash loans and
+      installment payments. Each row represents a single loan applicant enriched
+      with aggregated payment behavior data. This table is designed for dashboard
+      reporting on repayment discipline, payment delays, and overall loan
+      completion progress. Only applicants with a known default target are
+      included.
+
+    columns:
+      - name: loan_id
+        description: Unique identifier for each loan applicant.
+
+      - name: target
+        description: >
+          Loan default label. 1 indicates the client had payment difficulties,
+          0 indicates no payment issues. Primary outcome variable for credit
+          risk analysis.
+
+      - name: annual_income
+        description: Total annual income of the applicant in local currency.
+
+      - name: total_loan_amount
+        description: Total credit amount requested or granted for the current loan.
+
+      - name: monthly_loan_amount
+        description: Monthly annuity payment amount for the current loan in local currency.
+
+      - name: contract_type
+        description: >
+          Type of the current loan contract. Either 'Cash loans' or
+          'Revolving loans'.
+
+      - name: income_type
+        description: >
+          Category of the applicant's income source. Examples include
+          'Working', 'Commercial associate', 'Pensioner', 'State servant'.
+
+      - name: total_prev_installments
+        description: >
+          Total number of installments already paid across all previous
+          POS and cash loans the client has had with Home Credit. Reflects
+          the volume of completed payment obligations historically.
+
+      - name: total_future_installments
+        description: >
+          Total number of installments remaining to be paid across all
+          active POS and cash loans. Indicates the client's current
+          outstanding payment obligations going forward.
+
+      - name: most_contract_type
+        description: >
+          The most frequently occurring contract type across the client's
+          POS and cash loan history. Indicates the client's most common
+          loan product in previous relationships with Home Credit.
+
+      - name: total_dpd_def
+        description: >
+          Total number of months where the client was in DPD DEF status
+          (severely past due, typically 60+ days) across all POS and cash
+          loans. A high value is a strong indicator of chronic repayment
+          failure.
+
+      - name: avg_delay
+        description: >
+          Average number of days the client pays late across all installment
+          payments. Negative values indicate early payments, zero means
+          on time, and positive values indicate late payments.
+
+      - name: late_count
+        description: >
+          Total number of installment payments where the client paid late.
+          High values relative to total installments signal poor payment
+          discipline.
+
+      - name: total_paid
+        description: >
+          Total amount paid by the client across all installment payments
+          in local currency. Reflects the cumulative repayment effort.
+
+      - name: total_remaining
+        description: >
+          Total outstanding amount still owed by the client across all
+          installment obligations in local currency. High values relative
+          to total_paid indicate a large remaining debt burden.
+
+      - name: repayment_segment
+        description: >
+          Business-friendly label derived from avg_delay that categorizes
+          the client's repayment behavior into four tiers. 'Good Payer'
+          means the client pays on time or early (avg_delay 0 or below),
+          'Slightly Late' means average delay of 1 to 5 days, 'Frequently
+          Late' means 6 to 15 days, and 'High Risk' means average delay
+          exceeds 15 days. Useful for filtering and segmenting clients
+          in dashboards without interpreting raw delay numbers.

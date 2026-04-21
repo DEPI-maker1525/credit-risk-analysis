@@ -1,0 +1,117 @@
+version: 2
+
+models:
+  - name: mart_bureau_behaviour
+    description: >
+      Business-facing mart that combines applicant financial profile with their
+      external credit bureau history. Each row represents a single loan applicant
+      enriched with aggregated bureau data from other financial institutions.
+      This table is designed for dashboard reporting on credit risk, debt exposure,
+      and historical credit behavior. Only applicants with a known default target
+      are included.
+
+    columns:
+      - name: client_id
+        description: Unique identifier for each loan applicant (renamed from loan_id).
+
+      - name: target
+        description: >
+          Loan default label. 1 indicates the client had payment difficulties,
+          0 indicates no payment issues. Primary outcome variable for credit
+          risk analysis.
+
+      - name: annual_income
+        description: Total annual income of the applicant in local currency.
+
+      - name: total_loan_amount
+        description: Total credit amount requested or granted for the current loan.
+
+      - name: monthly_loan_amount
+        description: Monthly annuity payment amount for the current loan in local currency.
+
+      - name: income_type
+        description: >
+          Category of the applicant's income source. Examples include
+          'Working', 'Commercial associate', 'Pensioner', 'State servant'.
+
+      - name: organization_type
+        description: >
+          Type of organization where the applicant is employed. Used as a
+          proxy for employment stability and income reliability.
+
+      - name: bureau_num_credits
+        description: >
+          Total number of credits the applicant has ever had across all
+          external financial institutions reported to the credit bureau.
+
+      - name: num_active_credits
+        description: >
+          Number of currently active credits the applicant holds at other
+          financial institutions at the time of application.
+
+      - name: num_curr_overdue
+        description: >
+          Number of credits where the applicant is currently overdue on
+          payments. A high value is a strong indicator of financial distress.
+
+      - name: num_overdue_credits
+        description: >
+          Total number of credits that have ever been overdue historically,
+          including both current and past overdue records.
+
+      - name: num_prolonged_credits
+        description: >
+          Number of credits that have been prolonged or restructured at
+          external institutions. Indicates potential repayment difficulty.
+
+      - name: total_debt
+        description: >
+          Total outstanding debt amount across all bureau credits in local
+          currency. Reflects the applicant's overall debt burden.
+
+      - name: num_credits_last_year
+        description: >
+          Number of new credits the applicant opened in the last year across
+          external institutions. High values may indicate credit-seeking
+          behavior and increased risk.
+
+      - name: num_long_term
+        description: >
+          Number of long-term credits (typically mortgages or multi-year
+          loans) the applicant holds at external institutions.
+
+      - name: num_short_term
+        description: >
+          Number of short-term credits (typically consumer loans or
+          micro-loans) the applicant holds at external institutions.
+
+      - name: num_business_credits
+        description: >
+          Number of business-related credits the applicant holds at external
+          institutions. Indicates entrepreneurial or commercial financial
+          activity.
+
+      - name: oldest_credit_years
+        description: >
+          Age of the applicant's oldest credit record in years, derived from
+          oldest_credit_days. Reflects how long the applicant has had a
+          credit history.
+
+      - name: newest_credit_years
+        description: >
+          Age of the applicant's most recent credit record in years, derived
+          from newest_credit_days. A value close to 0 means a very recent
+          credit was opened.
+
+      - name: most_common_status
+        description: >
+          The most frequently occurring credit status across all bureau
+          records for this applicant. Examples include 'Active', 'Closed',
+          'Bad debt'. Summarizes the general state of the applicant's
+          external credit portfolio.
+
+      - name: has_high_risk_status
+        description: >
+          Binary flag indicating whether the applicant has at least one
+          high-risk credit status in their bureau history, such as bad debt
+          or write-off. 1 means high risk status exists, 0 means it does not.
