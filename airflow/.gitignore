@@ -1,0 +1,28 @@
+# Airflow
+.git
+.env
+.DS_Store
+airflow_settings.yaml
+__pycache__/
+astro
+.venv
+.astro/standalone/
+airflow-webserver.pid
+webserver_config.py
+airflow.cfg
+airflow.db
+# Data
+Data/
+
+# Environment
+venv/
+
+# DuckDB
+warehouse/
+
+# dbt
+dbt_project/logs/
+dbt_project/target/
+
+# IDE
+.vscode/
