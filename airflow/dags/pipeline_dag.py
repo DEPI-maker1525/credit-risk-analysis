@@ -32,8 +32,4 @@ with DAG(
         bash_command="cd /usr/local/airflow/dbt_project && dbt build",
     )
 
-<<<<<<< HEAD
 ingestion_task >> dbt_build_task
-=======
-    ingestion_task >> dbt_build_task
->>>>>>> 9f7674fcfb3ab1cdc9986f145d85e73397004e05
