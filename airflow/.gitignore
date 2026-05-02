@@ -12,7 +12,6 @@ webserver_config.py
 airflow.cfg
 airflow.db
 
-
 # Data
 Data/
 
@@ -27,9 +26,13 @@ dbt_project/logs/
 dbt_project/target/
 
 # IDE
+<<<<<<< HEAD
 .vscode/
 
 # OS junk
 .DS_Store
 Thumbs.db
 .bruin.yml
+=======
+.vscode/
+>>>>>>> 9f7674fcfb3ab1cdc9986f145d85e73397004e05
