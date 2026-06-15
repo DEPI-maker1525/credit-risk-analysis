@@ -1,3 +1,0 @@
-# DBT PROJECT 
-
-hoooooooooodzzz :)
