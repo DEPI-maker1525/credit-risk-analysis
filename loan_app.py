@@ -1,542 +1,426 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
+import joblib
+import os
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Loan Web App",
+    page_title="Credit Risk Predictor",
     page_icon="💳",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
+# ── Green & White Theme ───────────────────────────────────────────────────────
 st.markdown("""
 <style>
-  /* Google Font */
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-
-  html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-
-  /* Background */
-  .stApp { background-color: #f4faf4; }
-
-  /* Top header bar */
-  .app-header {
-    background: linear-gradient(135deg, #1a7f3c 0%, #2ecc71 100%);
-    color: white;
-    padding: 2rem 2.5rem 1.5rem;
-    border-radius: 0 0 18px 18px;
+/* ---------- global ---------- */
+html, body, [data-testid="stAppViewContainer"] {
+    background-color: #f0f7f0;
+    color: #1a3a1a;
+    font-family: 'Segoe UI', sans-serif;
+}
+[data-testid="stSidebar"] {
+    background-color: #1b5e20;
+    color: #ffffff;
+}
+[data-testid="stSidebar"] * {
+    color: #ffffff !important;
+}
+/* ---------- header ---------- */
+.main-header {
+    background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    padding: 2rem 2.5rem;
+    border-radius: 16px;
     margin-bottom: 2rem;
-    box-shadow: 0 4px 20px rgba(30,160,70,0.18);
-  }
-  .app-header h1 { margin: 0; font-size: 2.2rem; font-weight: 700; letter-spacing: -0.5px; }
-  .app-header p  { margin: 0.3rem 0 0; opacity: 0.88; font-size: 1rem; }
+    box-shadow: 0 4px 20px rgba(27,94,32,0.25);
+}
+.main-header h1 { color: #ffffff; margin: 0; font-size: 2rem; }
+.main-header p  { color: #c8e6c9; margin: 0.4rem 0 0; font-size: 1rem; }
 
-  /* Section cards */
-  .section-card {
-    background: white;
-    border-radius: 14px;
-    padding: 1.6rem 1.8rem;
-    margin-bottom: 1.4rem;
-    border: 1px solid #d4edda;
-    box-shadow: 0 2px 10px rgba(30,160,70,0.06);
-  }
-  .section-title {
-    font-size: 1rem;
+/* ---------- section cards ---------- */
+.section-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.2rem;
+    border-left: 5px solid #2e7d32;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+}
+.section-title {
+    color: #1b5e20;
+    font-size: 1.1rem;
     font-weight: 700;
-    color: #1a7f3c;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    border-bottom: 2px solid #d4edda;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1.1rem;
-  }
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-  /* Field metadata badge */
-  .field-meta {
-    font-size: 0.72rem;
-    color: #6c757d;
-    margin-bottom: 0.15rem;
-  }
-  .field-meta span {
-    background: #e8f5e9;
-    color: #1a7f3c;
-    border-radius: 4px;
-    padding: 1px 6px;
-    margin-right: 4px;
-    font-weight: 600;
-  }
+/* ---------- inputs ---------- */
+[data-testid="stNumberInput"] input,
+[data-testid="stSelectbox"] > div > div {
+    border: 1.5px solid #a5d6a7 !important;
+    border-radius: 8px !important;
+    background: #f9fbe7 !important;
+    color: #1a1a1a !important;
+}
+[data-testid="stNumberInput"] input:focus,
+[data-testid="stSelectbox"] > div > div:focus-within {
+    border-color: #2e7d32 !important;
+    box-shadow: 0 0 0 2px rgba(46,125,50,0.2) !important;
+}
+/* selectbox selected value & dropdown options */
+[data-testid="stSelectbox"] span,
+[data-testid="stSelectbox"] div[role="option"],
+[data-baseweb="select"] * {
+    color: #1a1a1a !important;
+}
+/* number input arrows */
+[data-testid="stNumberInput"] input::placeholder { color: #888 !important; }
+[data-baseweb="input"] input { color: #1a1a1a !important; }
+label { color: #2e7d32 !important; font-weight: 600 !important; font-size: 0.85rem !important; }
 
-  /* Submit button */
-  div.stButton > button {
-    background: linear-gradient(135deg, #1a7f3c, #2ecc71);
+/* ---------- predict button ---------- */
+div[data-testid="stButton"] > button {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
     color: white;
     border: none;
-    border-radius: 10px;
-    padding: 0.7rem 2.5rem;
-    font-size: 1.05rem;
-    font-weight: 600;
-    cursor: pointer;
+    padding: 0.75rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 30px;
     width: 100%;
-    transition: opacity .2s;
-  }
-  div.stButton > button:hover { opacity: 0.88; }
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(46,125,50,0.4);
+}
+div[data-testid="stButton"] > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46,125,50,0.5);
+}
 
-  /* Success box */
-  .success-box {
-    background: #e8f5e9;
-    border-left: 5px solid #1a7f3c;
-    border-radius: 10px;
-    padding: 1.2rem 1.5rem;
-    margin-top: 1.5rem;
-  }
-  .success-box h3 { color: #1a7f3c; margin-top: 0; }
+/* ---------- result boxes ---------- */
+.result-approved {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border: 2px solid #2e7d32;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+}
+.result-rejected {
+    background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+    border: 2px solid #c62828;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+}
+.result-icon   { font-size: 3.5rem; margin-bottom: 0.5rem; }
+.result-label  { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.3rem; }
+.result-prob   { font-size: 1.1rem; opacity: 0.85; }
+.prob-bar-wrap {
+    background: #e0e0e0;
+    border-radius: 20px;
+    height: 18px;
+    margin: 1rem auto;
+    max-width: 380px;
+    overflow: hidden;
+}
+.prob-bar-fill {
+    height: 100%;
+    border-radius: 20px;
+    transition: width 0.8s ease;
+}
+
+/* ---------- footer ---------- */
+.footer {
+    text-align: center;
+    color: #81c784;
+    font-size: 0.8rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #c8e6c9;
+}
 </style>
 """, unsafe_allow_html=True)
 
+# ── Model loading ─────────────────────────────────────────────────────────────
+MODEL_PATH = "ML/xgboost_pipeline"
+
+@st.cache_resource(show_spinner="Loading model…")
+def load_model(path: str):
+    for ext in ["", ".pkl", ".joblib"]:
+        full = path + ext
+        if os.path.exists(full):
+            return joblib.load(full)
+    raise FileNotFoundError(
+        f"Model not found at '{path}' (tried .pkl / .joblib). "
+        "Make sure the ML/ folder is in the same directory as this script."
+    )
+
+try:
+    model = load_model(MODEL_PATH)
+    model_ok = True
+except FileNotFoundError as e:
+    model_ok = False
+    model_error = str(e)
+
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown("""
-<div class="app-header">
-  <h1>💳 Loan Web App</h1>
-  <p>Complete the application form below. All fields are validated before submission.</p>
+<div class="main-header">
+  <h1>💳 Credit Risk Predictor</h1>
+  <p>Fill in the applicant details below and click <strong>Predict</strong> to get a credit risk assessment.</p>
 </div>
 """, unsafe_allow_html=True)
 
-# ── Helper: field meta label ──────────────────────────────────────────────────
-def meta(dtype, rule=""):
-    rule_html = f"<span>{rule}</span>" if rule else ""
-    st.markdown(f'<div class="field-meta"><span>{dtype}</span>{rule_html}</div>', unsafe_allow_html=True)
+if not model_ok:
+    st.error(f"⚠️ {model_error}")
+    st.info("The app will still render — fix the model path to enable predictions.")
 
-# ── Form ──────────────────────────────────────────────────────────────────────
-errors = {}
-values = {}
+# ── Helper ────────────────────────────────────────────────────────────────────
+def section(icon: str, title: str):
+    st.markdown(f'<div class="section-title">{icon} {title}</div>', unsafe_allow_html=True)
 
-with st.form("loan_form"):
+# ── Input form ────────────────────────────────────────────────────────────────
+with st.form("prediction_form"):
 
-    # ── SECTION 1: Basic Identity ─────────────────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">1 · Basic Identity</div>', unsafe_allow_html=True)
+    # ── 1 · Loan Information ────────────────────────────────────────────────
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    section("📄", "Loan Information")
+    c1, c2, c3, c4 = st.columns(4)
+    contract_type      = c1.selectbox("Contract Type",       ['Cash loans', 'Revolving loans'])
+    total_loan_amount  = c2.number_input("Total Loan Amount",       min_value=0.0, value=100000.0, step=1000.0)
+    monthly_loan_amount= c3.number_input("Monthly Loan Amount",     min_value=0.0, value=5000.0,  step=100.0)
+    goods_price        = c4.number_input("Goods Price",             min_value=0.0, value=90000.0, step=1000.0)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── 2 · Applicant Profile ───────────────────────────────────────────────
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    section("👤", "Applicant Profile")
+    c1, c2, c3, c4 = st.columns(4)
+    gender           = c1.selectbox("Gender",       ['M', 'F', 'XNA'])
+    own_car          = c2.selectbox("Own Car",      ['Y', 'N'])
+    own_realty       = c3.selectbox("Own Realty",   ['Y', 'N'])
+    num_children     = c4.number_input("Number of Children",   min_value=0,   value=0, step=1)
+
+    c1, c2, c3, c4 = st.columns(4)
+    annual_income    = c1.number_input("Annual Income",        min_value=0.0, value=150000.0, step=1000.0)
+    num_family_members= c2.number_input("Family Members",      min_value=0.0, value=2.0,     step=1.0)
+    days_birth       = c3.number_input("Days Since Birth (neg)", max_value=0, value=-12000, step=1,
+                                        help="Negative integer, e.g. -12000 means ~33 yrs old")
+    days_id_publish  = c4.number_input("Days ID Published",   value=-2000.0, step=1.0,
+                                        help="Days since ID was published (usually negative)")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── 3 · Socio-Economic Status ───────────────────────────────────────────
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    section("🏠", "Socio-Economic Status")
     c1, c2, c3 = st.columns(3)
-
-    with c1:
-        meta("Integer", "Exactly 6 digits")
-        loan_id = st.number_input("Loan ID", min_value=0, max_value=999999999, step=1, key="loan_id")
-        values["loan_id"] = int(loan_id)
-
-    with c2:
-        meta("String", "Cash loans | Revolving loans")
-        contract_type = st.selectbox("Contract Type", ["Cash loans", "Revolving loans"])
-        values["contract_type"] = contract_type
-
-    with c3:
-        meta("String", "F | M")
-        gender = st.selectbox("Gender", ["F", "M"])
-        values["gender"] = gender
-
-    c4, c5, c6 = st.columns(3)
-    with c4:
-        meta("String", "Y | N")
-        own_car = st.selectbox("Own Car", ["N", "Y"])
-        values["own_car"] = own_car
-
-    with c5:
-        meta("String", "Y | N")
-        own_realty = st.selectbox("Own Realty", ["N", "Y"])
-        values["own_realty"] = own_realty
-
-    with c6:
-        meta("Integer", "≥ 0")
-        num_children = st.number_input("Number of Children", min_value=0, step=1)
-        values["num_children"] = int(num_children)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ── SECTION 2: Financial Info ─────────────────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">2 · Financial Information</div>', unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns(4)
-
-    with c1:
-        meta("Float", "Must be positive")
-        annual_income = st.number_input("Annual Income", min_value=0.0, step=100.0, format="%.2f")
-        values["annual_income"] = annual_income
-
-    with c2:
-        meta("Float", "Must be positive")
-        total_loan_amount = st.number_input("Total Loan Amount", min_value=0.0, step=100.0, format="%.2f")
-        values["total_loan_amount"] = total_loan_amount
-
-    with c3:
-        meta("Float", "Must be positive")
-        monthly_loan_amount = st.number_input("Monthly Loan Amount", min_value=0.0, step=10.0, format="%.2f")
-        values["monthly_loan_amount"] = monthly_loan_amount
-
-    with c4:
-        meta("Float", "Must be positive")
-        goods_price = st.number_input("Goods Price", min_value=0.0, step=100.0, format="%.2f")
-        values["goods_price"] = goods_price
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ── SECTION 3: Personal Background ───────────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">3 · Personal Background</div>', unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns(4)
-
-    INCOME_TYPES = ['Pensioner','State servant','Working','Commercial associate',
-                    'Unemployed','Student','Businessman','Maternity leave']
-    EDUCATION_TYPES = ['Secondary / secondary special','Higher education',
-                       'Lower secondary','Incomplete higher','Academic degree']
-    FAMILY_STATUS = ['Married','Separated','Single / not married','Civil marriage','Widow','Unknown']
-    HOUSING_TYPES = ['House / apartment','With parents','Rented apartment',
-                     'Municipal apartment','Co-op apartment','Office apartment']
-
-    with c1:
-        meta("String", "Income type")
-        income_type = st.selectbox("Income Type", INCOME_TYPES)
-        values["income_type"] = income_type
-
-    with c2:
-        meta("String", "Education type")
-        education_type = st.selectbox("Education Type", EDUCATION_TYPES)
-        values["education_type"] = education_type
-
-    with c3:
-        meta("String", "Family status")
-        family_status = st.selectbox("Family Status", FAMILY_STATUS)
-        values["family_status"] = family_status
-
-    with c4:
-        meta("String", "Housing type")
-        housing_type = st.selectbox("Housing Type", HOUSING_TYPES)
-        values["housing_type"] = housing_type
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ── SECTION 4: Days / Employment ─────────────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">4 · Days & Employment</div>', unsafe_allow_html=True)
-    c1, c2, c3, c4, c5 = st.columns(5)
-
-    with c1:
-        meta("Integer", "Must be negative")
-        days_birth = st.number_input("Days Birth", max_value=-1, step=1, value=-1)
-        values["days_birth"] = int(days_birth)
-
-    with c2:
-        meta("Integer", "Must be negative")
-        days_employed = st.number_input("Days Employed", max_value=-1, step=1, value=-1)
-        values["days_employed"] = int(days_employed)
-
-    with c3:
-        meta("Integer", "Must be negative")
-        days_employed_clean = st.number_input("Days Employed (Clean)", max_value=-1, step=1, value=-1)
-        values["days_employed_clean"] = int(days_employed_clean)
-
-    with c4:
-        meta("Integer", "Must be negative")
-        days_id_publish = st.number_input("Days ID Publish", max_value=-1, step=1, value=-1)
-        values["days_id_publish"] = int(days_id_publish)
-
-    with c5:
-        meta("Float", "Between 0 and 1")
-        extra_sources = st.number_input("Extra Sources", min_value=0.0, max_value=1.0, step=0.01, format="%.3f")
-        values["extra_sources"] = extra_sources
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ── SECTION 5: Occupation & Region ───────────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">5 · Occupation & Region</div>', unsafe_allow_html=True)
-
-    OCCUPATION_TYPES = ['Laborers','Accountants','Realty agents','Cooking staff','Unknown','Sales staff',
-                        'Core staff','Cleaning staff','Drivers','High skill tech staff','Waiters/barmen staff',
-                        'Managers','Medicine staff','Security staff','Low-skill Laborers','Private service staff',
-                        'Secretaries','IT staff','HR staff']
-    ORG_TYPES = ['Business Entity Type 3','Business Entity Type 1','Realtor','Restaurant','XNA','Self-employed',
-                 'Trade: type 7','Housing','School','Medicine','Business Entity Type 2','Government','Kindergarten',
-                 'Other','Bank','Construction','Services','Military','Trade: type 3','Security','Industry: type 9',
-                 'Industry: type 3','Transport: type 2','Industry: type 7','Transport: type 3','Security Ministries',
-                 'Police','Transport: type 4','Trade: type 1','Postal','Legal Services','Industry: type 4',
-                 'Trade: type 6','Insurance','Industry: type 11','Industry: type 1','Agriculture','Industry: type 2',
-                 'Industry: type 12','Industry: type 5','Electricity','Trade: type 2','University','Telecom','Hotel',
-                 'Emergency','Cleaning','Industry: type 10','Advertising','Culture','Transport: type 1',
-                 'Industry: type 6','Mobile','Religion','Industry: type 13','Trade: type 4','Industry: type 8',
-                 'Trade: type 5']
+    income_type      = c1.selectbox("Income Type",    ['Working','State servant','Commercial associate','Pensioner','Student','Unemployed','Maternity leave','Businessman'])
+    education_type   = c2.selectbox("Education Type", ['Secondary / secondary special','Lower secondary','Higher education','Incomplete higher','Academic degree'])
+    family_status    = c3.selectbox("Family Status",  ['Married','Civil marriage','Separated','Single / not married','Widow','Unknown'])
 
     c1, c2, c3 = st.columns(3)
-
-    with c1:
-        meta("String", "Occupation type")
-        occupation_type = st.selectbox("Occupation Type", OCCUPATION_TYPES)
-        values["occupation_type"] = occupation_type
-
-    with c2:
-        meta("Integer", "≥ 0")
-        num_family_members = st.number_input("Num Family Members", min_value=0, step=1)
-        values["num_family_members"] = int(num_family_members)
-
-    with c3:
-        meta("Integer", "1 | 2 | 3")
-        region_rating_city = st.selectbox("Region Rating City", [1, 2, 3])
-        values["region_rating_city"] = region_rating_city
-
-    meta("String", "Organization type")
-    organization_type = st.selectbox("Organization Type", ORG_TYPES)
-    values["organization_type"] = organization_type
-
+    housing_type     = c1.selectbox("Housing Type",   ['House / apartment','Office apartment','With parents','Rented apartment','Municipal apartment','Co-op apartment'])
+    occupation_type  = c2.selectbox("Occupation Type",['Drivers','Sales staff','Unknown','Core staff','Managers','Accountants','Laborers','Medicine staff','Cleaning staff','Cooking staff','High skill tech staff','HR staff','Private service staff','Security staff','Waiters/barmen staff','Low-skill Laborers','Secretaries','IT staff','Realty agents'])
+    organization_type= c3.selectbox("Organization Type",['Transport: type 3','Self-employed','Transport: type 2','Government','Business Entity Type 3','Other','Industry: type 4','Business Entity Type 2','Advertising','Security','XNA','Medicine','Kindergarten','Security Ministries','Military','Hotel','Agriculture','Electricity','Trade: type 7','Construction','Emergency','Mobile','School','Industry: type 9','Services','Business Entity Type 1','Industry: type 7','Trade: type 2','Restaurant','Trade: type 3','Bank','Industry: type 11','Postal','Transport: type 4','Industry: type 3','Trade: type 6','Police','University','Realtor','Cleaning','Industry: type 5','Industry: type 10','Housing','Industry: type 12','Insurance','Trade: type 1','Industry: type 1','Industry: type 2','Legal Services','Telecom','Culture','Trade: type 5','Trade: type 4','Industry: type 6','Religion','Industry: type 13','Transport: type 1','Industry: type 8'])
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ── SECTION 6: Phone & Employment Anomaly ────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">6 · Phone & Anomaly</div>', unsafe_allow_html=True)
-    c1, c2 = st.columns(2)
-
-    with c1:
-        meta("Integer", "Must be negative")
-        days_last_phone_change = st.number_input("Days Last Phone Change", max_value=-1, step=1, value=-1)
-        values["days_last_phone_change"] = int(days_last_phone_change)
-
-    with c2:
-        meta("Integer", "0 | 1")
-        is_employment_anomaly = st.selectbox("Is Employment Anomaly", [0, 1])
-        values["is_employment_anomaly"] = is_employment_anomaly
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ── SECTION 7: Bureau / Credit History ───────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">7 · Bureau & Credit History</div>', unsafe_allow_html=True)
-    c1, c2, c3, c4, c5 = st.columns(5)
-
-    with c1:
-        meta("Integer", "≥ 0")
-        bureau_num_credits = st.number_input("Bureau Num Credits", min_value=0, step=1)
-        values["bureau_num_credits"] = int(bureau_num_credits)
-
-    with c2:
-        meta("Integer", "≥ 0")
-        num_active_credits = st.number_input("Num Active Credits", min_value=0, step=1)
-        values["num_active_credits"] = int(num_active_credits)
-
-    with c3:
-        meta("Integer", "≥ 0")
-        num_curr_overdue = st.number_input("Num Curr Overdue", min_value=0, step=1)
-        values["num_curr_overdue"] = int(num_curr_overdue)
-
-    with c4:
-        meta("Integer", "≥ 0")
-        num_overdue_credits = st.number_input("Num Overdue Credits", min_value=0, step=1)
-        values["num_overdue_credits"] = int(num_overdue_credits)
-
-    with c5:
-        meta("Integer", "≥ 0")
-        num_prolonged_credits = st.number_input("Num Prolonged Credits", min_value=0, step=1)
-        values["num_prolonged_credits"] = int(num_prolonged_credits)
-
-    c1, c2, c3, c4, c5 = st.columns(5)
-
-    with c1:
-        meta("Float", "≥ 0")
-        total_debt = st.number_input("Total Debt", min_value=0.0, step=100.0, format="%.2f")
-        values["total_debt"] = total_debt
-
-    with c2:
-        meta("Integer", "Must be positive")
-        oldest_credit_days = st.number_input("Oldest Credit Days", min_value=1, step=1)
-        values["oldest_credit_days"] = int(oldest_credit_days)
-
-    with c3:
-        meta("Integer", "Must be positive")
-        newest_credit_days = st.number_input("Newest Credit Days", min_value=1, step=1)
-        values["newest_credit_days"] = int(newest_credit_days)
-
-    with c4:
-        meta("Integer", "≥ 0")
-        num_credits_last_year = st.number_input("Num Credits Last Year", min_value=0, step=1)
-        values["num_credits_last_year"] = int(num_credits_last_year)
-
-    with c5:
-        meta("Integer", "≥ 0")
-        num_long_term = st.number_input("Num Long Term", min_value=0, step=1)
-        values["num_long_term"] = int(num_long_term)
+    # ── 4 · Employment & Region ─────────────────────────────────────────────
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    section("💼", "Employment & Region")
+    c1, c2, c3, c4 = st.columns(4)
+    days_employed        = c1.number_input("Days Employed (neg)",    value=-3000,  step=1,
+                                            help="Negative = employed; positive = unemployed anomaly")
+    days_employed_clean  = c2.number_input("Days Employed Clean",    value=-3000,  step=1,
+                                            help="Cleaned version (Int64)")
+    is_employment_anomaly= c3.number_input("Is Employment Anomaly",  min_value=0, max_value=1, value=0, step=1)
+    region_rating_city   = c4.number_input("Region Rating (City)",   min_value=1, max_value=3, value=2, step=1)
 
     c1, c2 = st.columns(2)
-    with c1:
-        meta("Integer", "≥ 0")
-        num_short_term = st.number_input("Num Short Term", min_value=0, step=1)
-        values["num_short_term"] = int(num_short_term)
-
-    with c2:
-        meta("Integer", "≥ 0")
-        num_business_credits = st.number_input("Num Business Credits", min_value=0, step=1)
-        values["num_business_credits"] = int(num_business_credits)
-
+    days_last_phone_change = c1.number_input("Days Last Phone Change", value=-500.0, step=1.0)
+    extra_sources          = c2.number_input("Extra Sources (0–1)",    min_value=0.0, max_value=1.0, value=0.5, step=0.01,
+                                              format="%.3f")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ── SECTION 8: Previous Applications & Status ────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">8 · Previous Applications & Status</div>', unsafe_allow_html=True)
-
-    COMMON_STATUS = ['X', '0', 'C', '1', '5', '2', 'Unknown/NaN']
-    c1, c2, c3 = st.columns(3)
-
-    with c1:
-        meta("String", "Credit status")
-        most_common_status = st.selectbox("Most Common Status", COMMON_STATUS)
-        values["most_common_status"] = most_common_status if most_common_status != 'Unknown/NaN' else None
-
-    with c2:
-        meta("Integer", "≥ 0")
-        has_high_risk_status = st.number_input("Has High Risk Status", min_value=0, step=1)
-        values["has_high_risk_status"] = int(has_high_risk_status)
-
-    with c3:
-        meta("Integer", "≥ 0")
-        total_prev_installments = st.number_input("Total Prev Installments", min_value=0, step=1)
-        values["total_prev_installments"] = int(total_prev_installments)
-
-    c1, c2, c3 = st.columns(3)
-
-    with c1:
-        meta("Float", "≥ 0")
-        total_future_installments = st.number_input("Total Future Installments", min_value=0.0, step=1.0, format="%.2f")
-        values["total_future_installments"] = total_future_installments
-
-    with c2:
-        meta("String", "Active | Closed")
-        most_contract_type = st.selectbox("Most Contract Type", ["Active", "Closed"])
-        values["most_contract_type"] = most_contract_type
-
-    with c3:
-        meta("Float", "≥ 0")
-        total_dpd_def = st.number_input("Total DPD Def", min_value=0.0, step=1.0, format="%.2f")
-        values["total_dpd_def"] = total_dpd_def
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ── SECTION 9: Payment Metrics ───────────────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">9 · Payment Metrics</div>', unsafe_allow_html=True)
+    # ── 5 · Bureau History ───────────────────────────────────────────────────
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    section("🏦", "Bureau Credit History")
     c1, c2, c3, c4 = st.columns(4)
+    bureau_num_credits   = c1.number_input("Bureau # Credits",     min_value=0,   value=5,    step=1)
+    num_active_credits   = c2.number_input("Active Credits",       min_value=0.0, value=2.0,  step=1.0)
+    num_curr_overdue     = c3.number_input("Current Overdue",      min_value=0.0, value=0.0,  step=1.0)
+    num_overdue_credits  = c4.number_input("Overdue Credits",      min_value=0.0, value=0.0,  step=1.0)
 
-    with c1:
-        meta("Float", "Positive or negative")
-        avg_delay = st.number_input("Avg Delay", step=0.01, format="%.2f")
-        values["avg_delay"] = avg_delay
+    c1, c2, c3, c4 = st.columns(4)
+    num_prolonged_credits= c1.number_input("Prolonged Credits",    min_value=0.0, value=0.0,  step=1.0)
+    total_debt           = c2.number_input("Total Debt",           min_value=0.0, value=0.0,  step=100.0)
+    oldest_credit_days   = c3.number_input("Oldest Credit (days)", min_value=0,   value=1000, step=1)
+    newest_credit_days   = c4.number_input("Newest Credit (days)", min_value=0,   value=100,  step=1)
 
-    with c2:
-        meta("Integer", "≥ 0")
-        late_count = st.number_input("Late Count", min_value=0, step=1)
-        values["late_count"] = int(late_count)
+    c1, c2, c3, c4 = st.columns(4)
+    num_credits_last_year= c1.number_input("Credits Last Year",    min_value=0.0, value=1.0,  step=1.0)
+    num_long_term        = c2.number_input("Long-Term Credits",    min_value=0.0, value=1.0,  step=1.0)
+    num_short_term       = c3.number_input("Short-Term Credits",   min_value=0.0, value=1.0,  step=1.0)
+    num_business_credits = c4.number_input("Business Credits",     min_value=0.0, value=0.0,  step=1.0)
 
-    with c3:
-        meta("Float", "≥ 0")
-        total_paid = st.number_input("Total Paid", min_value=0.0, step=100.0, format="%.2f")
-        values["total_paid"] = total_paid
-
-    with c4:
-        meta("Float", "≥ 0")
-        total_remaining = st.number_input("Total Remaining", min_value=0.0, step=100.0, format="%.2f")
-        values["total_remaining"] = total_remaining
-
+    c1, c2 = st.columns(2)
+    most_common_status   = c1.selectbox("Most Common Status", ['0', 'C', 'X', '1', '5', '2', '3', 'nan'])
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ── SECTION 10: Application Counts ───────────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">10 · Application Counts</div>', unsafe_allow_html=True)
-    c1, c2, c3, c4, c5 = st.columns(5)
+    # ── 6 · Previous Applications ───────────────────────────────────────────
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    section("📋", "Previous Applications")
+    c1, c2, c3, c4 = st.columns(4)
+    total_prev_installments  = c1.number_input("Total Prev Installments",   min_value=0.0, value=0.0, step=1.0)
+    total_future_installments= c2.number_input("Total Future Installments", min_value=0.0, value=0.0, step=1.0)
+    most_contract_type       = c3.selectbox("Most Contract Type", ['Active', 'nan'])
+    total_dpd_def            = c4.number_input("Total DPD Default",         min_value=0.0, value=0.0, step=1.0)
 
-    with c1:
-        meta("Integer", "≥ 0")
-        total_previous_applications = st.number_input("Total Prev Applications", min_value=0, step=1)
-        values["total_previous_applications"] = int(total_previous_applications)
+    c1, c2, c3, c4 = st.columns(4)
+    avg_delay                = c1.number_input("Avg Delay (days)",          min_value=0.0, value=0.0, step=0.1)
+    late_count               = c2.number_input("Late Count",                min_value=0,   value=0,   step=1)
+    total_paid               = c3.number_input("Total Paid",                min_value=0.0, value=0.0, step=100.0)
+    total_remaining          = c4.number_input("Total Remaining",           min_value=0.0, value=0.0, step=100.0)
 
-    with c2:
-        meta("Integer", "≥ 0")
-        unique_contract_types = st.number_input("Unique Contract Types", min_value=0, step=1)
-        values["unique_contract_types"] = int(unique_contract_types)
+    c1, c2, c3, c4 = st.columns(4)
+    total_previous_applications= c1.number_input("Total Prev Applications", min_value=0, value=0, step=1)
+    unique_contract_types      = c2.number_input("Unique Contract Types",   min_value=0, value=1, step=1)
+    num_approved               = c3.number_input("Approved Applications",   min_value=0.0, value=0.0, step=1.0)
+    num_refused                = c4.number_input("Refused Applications",    min_value=0.0, value=0.0, step=1.0)
 
-    with c3:
-        meta("Integer", "≥ 0")
-        num_approved = st.number_input("Num Approved", min_value=0, step=1)
-        values["num_approved"] = int(num_approved)
+    c1, c2, c3, c4 = st.columns(4)
+    num_canceled               = c1.number_input("Canceled Applications",   min_value=0.0, value=0.0, step=1.0)
+    avg_annuity_amount         = c2.number_input("Avg Annuity Amount",      min_value=0.0, value=0.0, step=100.0)
+    avg_loan_amount            = c3.number_input("Avg Loan Amount",         min_value=0.0, value=0.0, step=100.0)
+    avg_down_payment           = c4.number_input("Avg Down Payment",        min_value=0.0, value=0.0, step=100.0)
 
-    with c4:
-        meta("Integer", "≥ 0")
-        num_refused = st.number_input("Num Refused", min_value=0, step=1)
-        values["num_refused"] = int(num_refused)
-
-    with c5:
-        meta("Integer", "≥ 0")
-        num_canceled = st.number_input("Num Canceled", min_value=0, step=1)
-        values["num_canceled"] = int(num_canceled)
-
+    c1, _ = st.columns([1, 3])
+    total_is_insured           = c1.number_input("Total Is Insured",        min_value=0.0, value=0.0, step=1.0)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ── SECTION 11: Averages ─────────────────────────────────────────────────
-    st.markdown('<div class="section-card"><div class="section-title">11 · Averages</div>', unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
+    # ── Submit ───────────────────────────────────────────────────────────────
+    st.markdown("<br>", unsafe_allow_html=True)
+    submitted = st.form_submit_button("🔍  Predict Credit Risk")
 
-    with c1:
-        meta("Float", "≥ 0")
-        avg_annuity_amount = st.number_input("Avg Annuity Amount", min_value=0.0, step=10.0, format="%.2f")
-        values["avg_annuity_amount"] = avg_annuity_amount
-
-    with c2:
-        meta("Float", "≥ 0")
-        avg_loan_amount = st.number_input("Avg Loan Amount", min_value=0.0, step=100.0, format="%.2f")
-        values["avg_loan_amount"] = avg_loan_amount
-
-    with c3:
-        meta("Float", "≥ 0")
-        avg_down_payment = st.number_input("Avg Down Payment", min_value=0.0, step=10.0, format="%.2f")
-        values["avg_down_payment"] = avg_down_payment
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ── Submit ────────────────────────────────────────────────────────────────
-    submitted = st.form_submit_button("🚀 Submit Application")
-
-# ── Post-submit validation ────────────────────────────────────────────────────
+# ── Prediction ────────────────────────────────────────────────────────────────
 if submitted:
-    errors = {}
+    # Build DataFrame exactly matching training column order
+    input_data = pd.DataFrame([{
+        "contract_type":              contract_type,
+        "gender":                     gender,
+        "own_car":                    own_car,
+        "own_realty":                 own_realty,
+        "num_children":               int(num_children),
+        "annual_income":              float(annual_income),
+        "total_loan_amount":          float(total_loan_amount),
+        "monthly_loan_amount":        float(monthly_loan_amount),
+        "goods_price":                float(goods_price),
+        "income_type":                income_type,
+        "education_type":             education_type,
+        "family_status":              family_status,
+        "housing_type":               housing_type,
+        "days_birth":                 int(days_birth),
+        "days_employed":              int(days_employed),
+        "days_employed_clean":        pd.array([int(days_employed_clean)], dtype="Int64")[0],
+        "days_id_publish":            float(days_id_publish),
+        "extra_sources":              float(extra_sources),
+        "occupation_type":            occupation_type,
+        "num_family_members":         float(num_family_members),
+        "region_rating_city":         int(region_rating_city),
+        "organization_type":          organization_type,
+        "days_last_phone_change":     float(days_last_phone_change),
+        "is_employment_anomaly":      int(is_employment_anomaly),
+        "bureau_num_credits":         pd.array([int(bureau_num_credits)], dtype="Int64")[0],
+        "num_active_credits":         float(num_active_credits),
+        "num_curr_overdue":           float(num_curr_overdue),
+        "num_overdue_credits":        float(num_overdue_credits),
+        "num_prolonged_credits":      float(num_prolonged_credits),
+        "total_debt":                 float(total_debt),
+        "oldest_credit_days":         pd.array([int(oldest_credit_days)], dtype="Int64")[0],
+        "newest_credit_days":         pd.array([int(newest_credit_days)], dtype="Int64")[0],
+        "num_credits_last_year":      float(num_credits_last_year),
+        "num_long_term":              float(num_long_term),
+        "num_short_term":             float(num_short_term),
+        "num_business_credits":       float(num_business_credits),
+        "most_common_status":         None if most_common_status == "nan" else most_common_status,
+        "total_prev_installments":    float(total_prev_installments),
+        "total_future_installments":  float(total_future_installments),
+        "most_contract_type":         None if most_contract_type == "nan" else most_contract_type,
+        "total_dpd_def":              float(total_dpd_def),
+        "avg_delay":                  float(avg_delay),
+        "late_count":                 pd.array([int(late_count)], dtype="Int64")[0],
+        "total_paid":                 float(total_paid),
+        "total_remaining":            float(total_remaining),
+        "total_previous_applications":pd.array([int(total_previous_applications)], dtype="Int64")[0],
+        "unique_contract_types":      pd.array([int(unique_contract_types)], dtype="Int64")[0],
+        "num_approved":               float(num_approved),
+        "num_refused":                float(num_refused),
+        "num_canceled":               float(num_canceled),
+        "avg_annuity_amount":         float(avg_annuity_amount),
+        "avg_loan_amount":            float(avg_loan_amount),
+        "avg_down_payment":           float(avg_down_payment),
+        "total_is_insured":           float(total_is_insured),
+    }])
 
-    # loan_id: exactly 6 digits
-    lid = str(int(values["loan_id"]))
-    if len(lid) != 6:
-        errors["loan_id"] = f"Loan ID must be exactly 6 digits (got {len(lid)})."
-
-    # positive checks
-    for field in ["annual_income", "total_loan_amount", "monthly_loan_amount", "goods_price"]:
-        if values[field] <= 0:
-            errors[field] = f"{field.replace('_', ' ').title()} must be greater than 0."
-
-    # negative checks
-    for field in ["days_birth", "days_employed", "days_employed_clean", "days_id_publish", "days_last_phone_change"]:
-        if values[field] >= 0:
-            errors[field] = f"{field.replace('_', ' ').title()} must be a negative number."
-
-    # extra_sources range
-    if not (0.0 <= values["extra_sources"] <= 1.0):
-        errors["extra_sources"] = "Extra Sources must be between 0 and 1."
-
-    # positive credit days
-    for field in ["oldest_credit_days", "newest_credit_days"]:
-        if values[field] <= 0:
-            errors[field] = f"{field.replace('_', ' ').title()} must be positive."
-
-    # ── Display errors ────────────────────────────────────────────────────────
-    if errors:
-        st.error("⚠️ Please fix the following errors before submitting:")
-        for field, msg in errors.items():
-            st.markdown(f"- **{field}**: {msg}")
+    if not model_ok:
+        st.error("Cannot run prediction — model not loaded. Check the MODEL_PATH.")
     else:
-        st.markdown("""
-        <div class="success-box">
-          <h3>✅ Application Submitted Successfully!</h3>
-          <p>All fields passed validation. Here is a summary of the submitted data:</p>
-        </div>
-        """, unsafe_allow_html=True)
+        try:
+            proba = model.predict_proba(input_data)[0]
+            # Class 1 = default risk; class 0 = approved
+            risk_prob    = float(proba[1])
+            approve_prob = float(proba[0])
+            prediction   = risk_prob >= 0.5          # True → HIGH RISK (rejected)
 
-        # Display as a styled dataframe
-        df = pd.DataFrame(list(values.items()), columns=["Field", "Value"])
-        st.dataframe(
-            df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Field": st.column_config.TextColumn("Field", width="medium"),
-                "Value": st.column_config.TextColumn("Value", width="large"),
-            }
-        )
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("### 📊 Prediction Result")
+
+            if not prediction:
+                bar_color = "#2e7d32"
+                st.markdown(f"""
+                <div class="result-approved">
+                  <div class="result-icon">✅</div>
+                  <div class="result-label" style="color:#1b5e20;">APPROVED — Low Risk</div>
+                  <div class="result-prob">Approval probability: <strong>{approve_prob*100:.1f}%</strong></div>
+                  <div class="prob-bar-wrap">
+                    <div class="prob-bar-fill" style="width:{approve_prob*100:.1f}%;background:{bar_color};"></div>
+                  </div>
+                  <div class="result-prob" style="font-size:0.9rem;color:#555;">
+                    Risk probability: {risk_prob*100:.1f}%
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                bar_color = "#c62828"
+                st.markdown(f"""
+                <div class="result-rejected">
+                  <div class="result-icon">❌</div>
+                  <div class="result-label" style="color:#b71c1c;">REJECTED — High Risk</div>
+                  <div class="result-prob">Risk probability: <strong>{risk_prob*100:.1f}%</strong></div>
+                  <div class="prob-bar-wrap">
+                    <div class="prob-bar-fill" style="width:{risk_prob*100:.1f}%;background:{bar_color};"></div>
+                  </div>
+                  <div class="result-prob" style="font-size:0.9rem;color:#555;">
+                    Approval probability: {approve_prob*100:.1f}%
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Raw probabilities table
+            with st.expander("🔬 Raw model output"):
+                st.dataframe(pd.DataFrame({
+                    "Outcome":     ["Approved (No Default)", "Rejected (Default)"],
+                    "Probability": [f"{approve_prob*100:.4f}%", f"{risk_prob*100:.4f}%"],
+                }), hide_index=True, use_container_width=True)
+
+        except Exception as e:
+            st.error(f"Prediction failed: {e}")
+            st.exception(e)
+
+# ── Footer ────────────────────────────────────────────────────────────────────
+st.markdown("""
+<div class="footer">
+  Credit Risk Predictor · Powered by XGBoost · For internal use only
+</div>
+""", unsafe_allow_html=True)
