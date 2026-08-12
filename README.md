@@ -86,6 +86,8 @@ To make the solution accessible to end users, we developed an interactive web ap
 * Display credit risk result instantly.
 * Support decision-making for loan approval processes.
 
+Check the web applciation [here](https://credit-loan-app-predictor.streamlit.app/#credit-risk-predictor)
+
 ---
 
 ## 📂 Dataset
